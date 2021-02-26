@@ -1,8 +1,27 @@
+# MODPlot - Helper functions for the MOD matplotlib plot style
+# Copyright (C) 2019-2021 Patrick T. Komiske III
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 import math
 import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+__version__ = '0.1.0'
 
 PLOTS_PATH = os.path.join(os.pardir, 'plots')
 BARE_PLOTS_SUBDIR = 'bare'
@@ -73,6 +92,24 @@ def axes(ratio_plot=True, figsize=(4,4), gridspec_update=None,
     
     return fig, axes
 
+# function for getting histograms from observable values
+def calc_hist(vals, bins=10, weights=None, density=True):
+    
+    if weights is None:
+        weights = np.ones(vals.shape)
+    
+    # compute histogram
+    hist, bins = np.histogram(vals, bins=bins, weights=weights)
+    errs2 = np.histogram(vals, bins=bins, weights=weights*weights)[0]
+
+    # handle normalization
+    if density:
+        hist_tot = np.sum(hist * np.diff(bins))
+        hist /= hist_tot
+        errs2 /= hist_tot*hist_tot
+
+    return hist, np.sqrt(errs2), bins
+
 # general function to handle the style
 def style(func, **kwargs):
     if func == 'errorbar':
@@ -129,24 +166,6 @@ def legend(ax=None, order=None, **kwargs):
     # add legend
     ax.legend(handles, labels, **legend_opts)
 
-# function for getting histograms from observable values
-def calc_hist(vals, bins=10, weights=None, density=True):
-    
-    if weights is None:
-        weights = np.ones(vals.shape)
-    
-    # compute histogram
-    hist, bins = np.histogram(vals, bins=bins, weights=weights)
-    errs2 = np.histogram(vals, bins=bins, weights=weights*weights)[0]
-
-    # handle normalization
-    if density:
-        hist_tot = np.sum(hist * np.diff(bins))
-        hist /= hist_tot
-        errs2 /= hist_tot*hist_tot
-
-    return hist, np.sqrt(errs2), bins
-
 # function to add a stamp to figures
 def stamp(left_x, top_y, ax=None, delta_y=0.075, textops_update=None, **kwargs):
     
@@ -186,6 +205,9 @@ def save(fig, name, path=None, add_watermark=True, process_name=True, **kwargs):
     if add_watermark:
         out_plots_dir = path
         path = os.path.join(path, BARE_PLOTS_SUBDIR)
+
+    # ensure path exists
+    os.makedirs(path, exist_ok=True)
 
     fig.savefig(os.path.join(path, name), bbox_inches='tight')
 

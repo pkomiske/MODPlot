@@ -21,7 +21,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 PLOTS_PATH = os.path.join(os.pardir, 'plots')
 BARE_PLOTS_SUBDIR = 'bare'
@@ -230,7 +230,7 @@ def watermark(plot_filename, scale=0.12, tx=44, ty=251,
     os.makedirs(out_plots_dir, exist_ok=True)
     
     # open files for bare plot and the logo
-    with open(os.path.join(in_plots_dir, plot_file), 'rb') as bare_plot, open(logo_fpath, 'rb') as logo:
+    with open(os.path.join(in_plots_dir, plot_filename), 'rb') as bare_plot, open(logo_fpath, 'rb') as logo:
         
         # extract pdf pages for bare plot and the logo
         plot_page = PyPDF2.PdfFileReader(bare_plot).getPage(0)
@@ -244,5 +244,5 @@ def watermark(plot_filename, scale=0.12, tx=44, ty=251,
         out_plot_pdf.addPage(plot_page)
         
         # write new plot to PDF
-        with open(os.path.join(out_plots_dir, plot_file), 'wb') as out_plot:
+        with open(os.path.join(out_plots_dir, plot_filename), 'wb') as out_plot:
             out_plot_pdf.write(out_plot)
